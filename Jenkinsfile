@@ -4,7 +4,8 @@
 def registry = "quay.io";
 def registry_user = "samsung_cnct";
 def chart_name = "zabra";
-def robot_secret = "samsung-cnct-quay-robot-zabra-rw"
+def robot_secret = "quay-robot-zabra-rw"
+
 def helm_registry_image = "quay.io/samsung_cnct/helm-registry-agent";
 def helm_registry_version = "v0.1.5";
 
