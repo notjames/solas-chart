@@ -4,12 +4,15 @@
 def registry = "quay.io";
 def registry_user = "samsung_cnct";
 def chart_name = "zabra";
+def robot_secret = "samsung-cnct-quay-robot-zabra-rw"
 def helm_registry_image = "quay.io/samsung_cnct/helm-registry-agent";
 def helm_registry_version = "v0.1.5";
 
 podTemplate(label: 'chart-builder', containers: [
         containerTemplate(name: 'jnlp', image: 'quay.io/samsung_cnct/custom-jnlp:0.1', args: '${computer.jnlpmac} ${computer.name}'),
         containerTemplate(name: 'helm-registry-agent', image: 'quay.io/samsung_cnct/helm-registry-agent:v0.1.5', ttyEnabled: true, command: 'cat', alwaysPullImage: true, resourceRequestMemory: '256Mi', resourceLimitMemory: '256Mi'),
+], volumes: [
+    secretVolume(mountPath: '/home/jenkins/.docker/', secretName: robot_secret)
 ]) {
     node('chart-builder') {
         customContainer('helm-registry-agent'){
@@ -27,9 +30,7 @@ podTemplate(label: 'chart-builder', containers: [
 
             if (env.BRANCH_NAME.startsWith('tags/v')) {
                 stage('Deploy') {
-                    withCredentials([usernamePassword(credentialsId: 'quay_credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        kubesh("helm registry login ${registry} -u ${USERNAME} -p ${PASSWORD} && cd ${chart_name} && helm registry push ${registry}/${registry_user}/${chart_name} -c stable")
-                    }
+                    kubesh("helm registry login ${registry} -u $(cat /etc/foo/username) -p $(cat /etc/foo/password) && cd ${chart_name} && helm registry push ${registry}/${registry_user}/${chart_name} -c stable")
                 }
             }
         }       
